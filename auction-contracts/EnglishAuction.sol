@@ -1,10 +1,9 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.26;
 
-/***
-@title English Auction Contract - Very simple auction contract
-@author 0xaudron - https://x.com/0xaudron
 
+contract EnglishAuction  {
+/*
 Features of English Auction:
 1. Bidding 
 2. Ascending prices
@@ -14,13 +13,11 @@ Flow of the processes:
 Auction Initialization > Bidding Process > Auction End > Settle(Winner Anncounced)
 
 Roles: 
-- Manager (this contract)
+- Owner (Auction Manager - EnglishAuctionFactory.sol)
 - Seller
 - Bidder 
 
-***/
-contract EnglishAuction {
-
+*/
 
 // Constants
 uint256 constant public FEES = 1000; //1% of the winner's bid will go to this contract as a form of maintenance
@@ -32,7 +29,7 @@ struct Auction {
     uint256 startingPrice;  // base amount price
     uint256 highestBid;     // amount 
     address highestBidder;  // winner
-    bool ended;             //
+    bool ended;             // auction ended?
 }
 mapping(uint256 => Auction) public auctions;
 uint256 public auctionId;
@@ -63,6 +60,7 @@ function createAuction(uint256 _startingAmount) public  {
 
 function placeBid(uint256 _auctionId) public payable {
     Auction storage auction = auctions[_auctionId];
+    require( _auctionId <= auctionIdCounter,"Auction ID doesn't exists");
     require(!auction.ended, "Sorry, the auction has ended");
     require(auction.seller != msg.sender, "Seller and bidder can't be same");
     if(auction.highestBid == 0){
@@ -82,6 +80,7 @@ function placeBid(uint256 _auctionId) public payable {
 
 function endAuction(uint256 _auctionId) public {
     Auction storage auction = auctions[_auctionId];
+    require(!auction.ended, "Auction already ended");
     require(auction.seller == msg.sender,"Wrong caller, can't end auction sorry");
     auction.ended = true;
     settlement(_auctionId);
